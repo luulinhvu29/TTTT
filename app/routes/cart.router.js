@@ -11,5 +11,10 @@ module.exports = function(router){
 
     router.delete("/cart/delete_all", cartController.delete_all_cart);
 
+    router.get("/cart/mine", cartController.cart_info);
+
+    router.post("/cart/set_shipping_address", cartController.set_shipping_address );
+
+    router.post("/cart/check_out", cartController.check_out_cart); 
 
 };

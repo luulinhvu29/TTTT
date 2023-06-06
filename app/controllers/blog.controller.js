@@ -90,17 +90,21 @@ exports.update_blog = async function (req, res) {
 
         // if (orders != null) {
         const data1 = req.body;
-        const sourceFilePath = req.body.img;
-        const destFolderPath = 'G:\\xampp\\htdocs\\magento2\\pub\\media\\catalog\\blog';
-        const fileName = path.basename(sourceFilePath);
+        if(req.body.img){
+            const sourceFilePath = req.body.img;
+            // const destFolderPath = 'G:\\xampp\\htdocs\\magento2\\pub\\media\\catalog\\blog';
+            // const fileName = path.basename(sourceFilePath);
 
-        const destFilePath = path.join(destFolderPath, fileName);
+            console.log(sourceFilePath);
 
-        
-        fs.copyFileSync(sourceFilePath, destFilePath); // sao chép file từ nguồn đến đích
-      
-        
-        data1.img = fileName;
+            // const destFilePath = path.join(destFolderPath, fileName);
+            
+            // fs.copyFileSync(sourceFilePath, destFilePath); // sao chép file từ nguồn đến đích        
+            
+            // data1.img = fileName;
+        }else{
+            data1.img = null;
+        }
 
         Blog.update(data1, function (data) {
             console.log(data.affectedRows);
@@ -114,17 +118,17 @@ exports.update_blog = async function (req, res) {
 
 
     } catch (error) {
-        console.log(error.response.status);
-        console.log(error.response.data);
-        if (error.response.status == 400) {
-            return res.status(400).json({ message: "4000" });
-        }
-        if (error.response.status == 401) {
-            return res.status(401).json({ message: "Token khong hop le" });
-        }
-        if (error.response.status == 403) {
-            return res.status(403).json({ success: false, message: "430" });
-        }
+        console.log(error);
+
+        // if (error.response.status == 400) {
+        //     return res.status(400).json({ message: "4000" });
+        // }
+        // if (error.response.status == 401) {
+        //     return res.status(401).json({ message: "Token khong hop le" });
+        // }
+        // if (error.response.status == 403) {
+        //     return res.status(403).json({ success: false, message: "430" });
+        // }
 
     }
 

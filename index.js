@@ -1,4 +1,6 @@
 var express = require('express');
+const multer  = require('multer');
+const upload = multer({ dest: 'G:\\xampp\\htdocs\\magento2\\pub\\media\\catalog\\blog' });
 var cors = require('cors');
 var app = express();
 //bodyparser
