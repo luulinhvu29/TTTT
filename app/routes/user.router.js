@@ -14,6 +14,6 @@ module.exports = function(router){
     // router.delete('/book/delete/:id', bookController.remove_book);
     router.delete('/user/delete', userController.remove_user);
 
-    router.patch('/user/update', userController.update_user);
+    router.patch('/user/update_address', userController.update_address);
 
 };

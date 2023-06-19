@@ -36,12 +36,59 @@ exports.remove_user = function (req, res) {
     });
 };
 
-exports.update_user = function (req, res) {
-    var data = req.body;
-    Book.update(data, function (respnse) {
-        res.send({ result: respnse });
-    });
-};
+exports.update_address = async (req, res) => {
+    const authHeader = req.header('Authorization');
+
+    if (!authHeader)
+        return res.status(401).json({ success: false, message: "Access token not found" });
+    try {
+
+        const data = {
+            customer: {
+                email: req.body.email,
+                firstname: req.body.firstname,
+                lastname: req.body.lastname,
+                addresses: [{
+                    defaultShipping: req.body.defaultShipping,
+                    defaultBilling: req.body.defaultBilling,
+                    firstname: req.body.firstname,
+                    lastname: req.body.lastname,
+                    region: {
+                        regionCode: req.body.regionCode,
+                        region: req.body.region,
+                        regionId: req.body.regionId
+                    },
+                    postcode: req.body.postcode,
+                    street: [req.body.street],
+                    city: req.body.city,
+                    telephone: req.body.telephone,
+                    countryId: req.body.countryId
+                }]
+            }
+        };
+
+
+        const config = {
+            headers: {
+                'Authorization': authHeader
+            }
+        };
+
+        const customer_info = await axios.put('http://192.168.1.9:80/magento2/rest/V1/customers/me', data, config);
+
+        return res.status(200).json({
+            customer_info: customer_info.data
+        });
+    } catch (err) {
+        console.log(err.response.status);
+        console.log(err.response.data);
+        if (err.response.status == 400) {
+            return res.status(400).json({
+                message: "Thieu truong"
+            });
+        }
+    }
+}
 
 exports.login = async (req, res) => {
     const data = {
@@ -70,8 +117,8 @@ exports.login = async (req, res) => {
         console.log(err.response.data);
         if (err.response.status == 401) {
             User.getByEmail(data.username, function (cusss) {
-                const customer = cusss;
-                if (customer[0].confirmation) {
+                console.log(cusss);
+                if (cusss != null) {
                     return res.status(402).json({
                         message: "Tài khoản chưa xác thực"
                     });

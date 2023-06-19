@@ -11,6 +11,8 @@ module.exports = function(router){
 
     router.post('/account/register', userController.register);
 
+    router.put('/account/update_address', userController.update_address);
+
     router.put('/account/change_password', userController.change_password);
 
 };

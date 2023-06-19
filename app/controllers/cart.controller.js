@@ -40,7 +40,13 @@ exports.get_cart = async function (req, res) {
             product_in_cart: response.data
         });
     } catch (error) {
-        console.log(error);
+        console.log(error.response.status);
+        console.log(error.response.data);
+
+        if (error.response.status == 404) {
+            return res.status(404).json({ success: false, message: "Khong co gio hang" });
+        }
+
         res.json({ success: false, message: "Loi roi" });
     }
 
@@ -137,6 +143,10 @@ exports.change_qty = async function (req, res) {
             return res.status(403).json({ success: false, message: "internal server error" });
         }
 
+        if (error.response.status == 401) {
+            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
+        }
+
     }
 
 };
@@ -180,6 +190,10 @@ exports.delete_cart = async function (req, res) {
 
         if (error.response.status == 403) {
             return res.status(403).json({ success: false, message: "internal server error" });
+        }
+
+        if (error.response.status == 401) {
+            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
         }
 
     }
@@ -231,6 +245,9 @@ exports.delete_all_cart = async function (req, res) {
             return res.status(403).json({ success: false, message: "internal server error" });
         }
 
+        if (error.response.status == 401) {
+            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
+        }
     }
 
 };
@@ -239,7 +256,7 @@ exports.cart_info = async function (req, res) {
 
     const authHeader = req.header('Authorization');
 
-    console.log(authHeader);
+
     if (!authHeader)
         return res.status(401).json({ success: false, message: "Access token not found" });
     try {
@@ -249,7 +266,7 @@ exports.cart_info = async function (req, res) {
             }
         };
 
-        const cart = await axios.get(`${BaseURL}/carts/mine/`, config);
+        const cart = await axios.get('http://192.168.1.9:80/magento2/rest/V1/carts/mine/', config);
 
         return res.status(200).json({
             product_in_cart: cart.data
@@ -263,6 +280,10 @@ exports.cart_info = async function (req, res) {
         }
         if (error.response.status == 403) {
             return res.status(403).json({ success: false, message: "internal server error" });
+        }
+
+        if (error.response.status == 401) {
+            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
         }
 
     }
@@ -284,7 +305,7 @@ exports.set_shipping_address = async (req, res) => {
                     ],
                     city: req.body.city,
                     postcode: req.body.postcode,
-                    country_id: req.body.country_id,
+                    countryId: req.body.countryId,
                     telephone: req.body.telephone,
                     email: req.body.email
                 },
@@ -296,7 +317,7 @@ exports.set_shipping_address = async (req, res) => {
                     ],
                     city: req.body.city,
                     postcode: req.body.postcode,
-                    country_id: req.body.country_id,
+                    countryId: req.body.countryId,
                     telephone: req.body.telephone,
                     email: req.body.email
                 },
@@ -304,6 +325,8 @@ exports.set_shipping_address = async (req, res) => {
                 // shipping_carrier_code: "flatrate"
             }
         }
+
+        
 
         const customer_token = req.get('authorization');
 
@@ -315,7 +338,6 @@ exports.set_shipping_address = async (req, res) => {
 
         const set_address = await axios.post('http://192.168.1.9:80/magento2/rest/V1/carts/mine/shipping-information', data, config);
 
-        console.log(set_address.data)
 
         return res.status(201).json({
             message: "Set address successful"
@@ -324,6 +346,10 @@ exports.set_shipping_address = async (req, res) => {
     } catch (err) {
         console.log(err.response.status);
         console.log(err.response.data);
+
+        if (error.response.status == 401) {
+            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
+        }
     }
 }
 
@@ -331,8 +357,10 @@ exports.check_out_cart = async (req, res) => {
     try {
 
         const data = {
-            paymentMethod: "checkmo"
-        }
+            paymentMethod: {
+                method: req.body.method
+            }
+        };
 
         const customer_token = req.get('authorization');
 
@@ -346,12 +374,25 @@ exports.check_out_cart = async (req, res) => {
 
         console.log(place_order.data)
 
-        return res.status(201).json({
+        return res.status(200).json({
             message: "Place order successfully",
-            order_id: place_order.data
-        })
+            order: place_order.data
+        });
 
     } catch (err) {
-        console.log(err)
+        console.log(err.response.status);
+        console.log(err.response.data);
+
+        if (err.response.status == 400) {
+            return res.status(400).json({ message: "Phuong thuc thanh toan khong hop le" });
+        }
+
+        if (error.response.status == 401) {
+            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
+        }
+
+        if (error.response.status == 404) {
+            return res.status(401).json({ success: false, message: "Khong co gio hang" });
+        }
     }
 }

@@ -1,31 +1,84 @@
 var axios = require('axios');
 
-exports.create_order = async (req, res) => {
+exports.get_order = async (req, res) => {
     try {
-        console.log(req.body);
         const data = {
-            customer: {
-                email: req.body.email,
-                firstname: req.body.firstname,
-                lastname: req.body.lastname
-            },
-            password: req.body.password
-        };
+            username: 'admin',
+            password: 'admin123'
+        }
 
-        const response = await axios.post('http://192.168.1.9:80/magento2/rest/V1/customers', data);
+        const token = req.header('Authorization');
 
-        return res.status(201).json({
-            message: "đã đăng ký thành công, vui lòng đăng nhập để bắt đầu.",
-            customer_info: response.data
-        });
+        const config1 = {
+            headers: {
+                'Authorization': token
+            }
+        }
+
+        const customer_info = await axios.get('http://localhost/magento2/rest/default/V1/customers/me',config1);
+
+        console.log(customer_info.data.email);
+
+        const access_token = await axios.post('http://localhost/magento2/rest/default/V1/integration/admin/token',data);
+
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${access_token.data}`
+            }
+        }
+
+        const orders = await axios.get(`http://localhost/magento2/rest/default/V1/orders?searchCriteria[filterGroups][0][filters][0][field]=customer_email&searchCriteria[filterGroups][0][filters][0][value]=${customer_info.data.email}`, config);
+
+        return res.status(200).json({
+            orders: orders.data.items
+        })
     } catch (err) {
-        console.log(err.response)
-        if (err.response.status == 400) return res.status(400).json({
-            message: 'Tài khoản đã tồn tại, xin đăng ký tài khoản khác'
-        });
+        console.log(err.response);
 
-        if (err.response.status == 401) return res.status(401).json({
-            message: 'Tài khoản hoặc mật khẩu không hợp lệ'
-        });
+        if (error.response.status == 401) {
+            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
+        }
+    }
+};
+
+
+exports.get_order_detail = async (req, res) => {
+    try {
+        const data = {
+            username: 'admin',
+            password: 'admin123'
+        }
+
+        const token = req.header('Authorization');
+
+        const config1 = {
+            headers: {
+                'Authorization': token
+            }
+        }
+
+        const customer_info = await axios.get('http://localhost/magento2/rest/default/V1/customers/me',config1);
+
+        console.log(customer_info.data.email);
+
+        const access_token = await axios.post('http://localhost/magento2/rest/default/V1/integration/admin/token',data);
+
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${access_token.data}`
+            }
+        }
+
+        const orders = await axios.get(`http://localhost/magento2/rest/default/V1/orders/${req.params.order_id}?searchCriteria`, config);
+
+        return res.status(200).json({
+            orders: orders.data
+        })
+    } catch (err) {
+        console.log(err.response);
+
+        if (error.response.status == 401) {
+            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
+        }
     }
 };

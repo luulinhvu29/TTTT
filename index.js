@@ -1,6 +1,6 @@
 var express = require('express');
-const multer  = require('multer');
-const upload = multer({ dest: 'G:\\xampp\\htdocs\\magento2\\pub\\media\\catalog\\blog' });
+// const multer  = require('multer');
+// const upload = multer({ dest: 'G:\\xampp\\htdocs\\magento2\\pub\\media\\catalog\\blog' });
 var cors = require('cors');
 var app = express();
 //bodyparser
@@ -21,6 +21,8 @@ require('./app/routes/user.router')(app);
 require('./app/routes/product.router')(app);
 require('./app/routes/cart.router')(app);
 require('./app/routes/blog.router')(app);
+require('./app/routes/order.router')(app);
+require('./app/routes/category.router')(app);
 
 
 app.listen(5000, '192.168.1.9', function(){

@@ -49,18 +49,13 @@ Blog.create = function (data, result) {
 };
 
 Blog.update = function (data, result) {
-
-    console.log(data);
-
     db.query("UPDATE blog SET img = ?,title = ?,content = ? WHERE blog_id = ?",
         [data.img, data.title, data.content, data.blog_id],
         function (err, blog) {
             if (err) {
-                result(null);
+                result(err);
             }
-            else {
-                result(blog);
-            }
+            return result(blog);
         }
     );
 
