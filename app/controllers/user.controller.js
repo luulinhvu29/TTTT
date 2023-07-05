@@ -2,7 +2,7 @@ var User = require('../models/user.model');
 var JWT = require('../common/_JWT');
 var axios = require('axios');
 
-const BaseURL = 'http://192.168.1.9:80/magento2/rest/V1';
+var BaseURL = 'http://192.168.1.9:80/magento2/rest/V1';
 
 exports.get_user = function (req, res) {
     User.get_all(function (data) {
@@ -74,7 +74,7 @@ exports.update_address = async (req, res) => {
             }
         };
 
-        const customer_info = await axios.put('http://192.168.1.9:80/magento2/rest/V1/customers/me', data, config);
+        const customer_info = await axios.put(`${BaseURL}`+'/customers/me', data, config);
 
         return res.status(200).json({
             customer_info: customer_info.data
@@ -98,7 +98,7 @@ exports.login = async (req, res) => {
 
     try {
 
-        const response = await axios.post('http://192.168.1.9:80/magento2/rest/V1/integration/customer/token', data);
+        const response = await axios.post(`${BaseURL}`+'/integration/customer/token', data);
 
         const config = {
             headers: {
@@ -106,27 +106,26 @@ exports.login = async (req, res) => {
             }
         };
 
-        const customer_info = await axios.get('http://192.168.1.9:80/magento2/rest/V1/customers/me', config);
+        const customer_info = await axios.get(`${BaseURL}`+'/customers/me', config);
 
         return res.status(200).json({
             token: response.data,
             customer_info: customer_info.data
         });
     } catch (err) {
-        console.log(err.response.status);
-        console.log(err.response.data);
-        if (err.response.status == 401) {
-            User.getByEmail(data.username, function (cusss) {
-                console.log(cusss);
-                if (cusss != null) {
-                    return res.status(402).json({
-                        message: "Tài khoản chưa xác thực"
-                    });
-                } else return res.status(401).json({
-                    message: "Tài khoản hoặc mật khẩu không đúng"
-                });
-            });
-        }
+        console.log(err);
+        // if (err.response.status == 401) {
+        //     User.getByEmail(data.username, function (cusss) {
+        //         console.log(cusss[0]);
+        //         if (cusss[0] && cusss[0].confirmation != null) {
+        //             return res.status(402).json({
+        //                 message: "Tài khoản chưa xác thực"
+        //             });
+        //         } else return res.status(401).json({
+        //             message: "Tài khoản hoặc mật khẩu không đúng"
+        //         });
+        //     });
+        // }
 
     }
 }
@@ -142,7 +141,7 @@ exports.register = async (req, res) => {
             password: req.body.password
         };
 
-        const response = await axios.post('http://192.168.1.9:80/magento2/rest/V1/customers', data);
+        const response = await axios.post(`${BaseURL}`+'/customers', data);
 
         return res.status(201).json({
             message: "đã đăng ký thành công, vui lòng đăng nhập để bắt đầu.",
@@ -180,7 +179,7 @@ exports.change_password = async (req, res) => {
             newPassword: req.body.new_password,
         }
 
-        const response = await axios.put('http://192.168.1.9:80/magento2/rest/V1/customers/me/password', data, config);
+        const response = await axios.put(`${BaseURL}`+'/customers/me/password', data, config);
 
         return res.status(200).json({
             status: response.data
@@ -213,7 +212,7 @@ exports.admin_login = async (req, res) => {
 
     try {
 
-        const response = await axios.post('http://192.168.1.9:80/magento2/rest/V1/integration/admin/token', data);
+        const response = await axios.post(`${BaseURL}`+'/integration/admin/token', data);
 
 
         return res.status(200).json({
@@ -229,6 +228,75 @@ exports.admin_login = async (req, res) => {
                 message: "Tài khoản hoặc mật khẩu không đúng"
             });
         };
+
+    }
+}
+
+exports.login_app = async (req, res) => {
+    const data = {
+        username: req.body.email,
+        password: req.body.password,
+    };
+
+    try {
+
+        const response = await axios.post(`${BaseURL}`+'/integration/customer/token', data);
+
+
+
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${response.data}`
+            }
+        };
+
+        const customer_info = await axios.get(`${BaseURL}`+'/customers/me', config);
+
+        return res.status(200).json({
+            token: response.data,
+            customer_info: customer_info.data
+        });
+
+
+
+    } catch (err) {
+
+        try {
+
+            const response = await axios.post(`${BaseURL}`+'/integration/admin/token', data);
+
+
+            return res.status(200).json({
+                token: response.data
+            });
+        } catch (err1) {
+            console.log(err1.response.status);
+            console.log(err1.response.data);
+            if (err1.response.status == 401) {
+
+
+                return res.status(401).json({
+                    message: "Tài khoản hoặc mật khẩu không đúng"
+                });
+            };
+
+        }
+
+        console.log(err.response.status);
+        console.log(err.response.data);
+        if (err.response.status == 401) {
+            User.getByEmail(data.username, function (cusss) {
+                console.log(cusss[0]);
+                if (cusss[0] && cusss[0].confirmation != null) {
+                    return res.status(402).json({
+                        message: "Tài khoản chưa xác thực"
+                    });
+                } else return res.status(401).json({
+                    message: "Tài khoản hoặc mật khẩu không đúng"
+                });
+            });
+        }
+
 
     }
 }

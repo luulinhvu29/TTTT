@@ -15,5 +15,7 @@ module.exports = function(router){
 
     router.put('/account/change_password', userController.change_password);
 
+    router.post('/account/login_app', userController.login_app);
+
 };
 

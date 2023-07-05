@@ -15,11 +15,15 @@ exports.get_order = async (req, res) => {
             }
         }
 
-        const customer_info = await axios.get('http://localhost/magento2/rest/default/V1/customers/me',config1);
+        console.log('cus_token', token);
 
-        console.log(customer_info.data.email);
+        const customer_info = await axios.get('http://localhost/magento2/rest/default/V1/customers/me', config1);
 
-        const access_token = await axios.post('http://localhost/magento2/rest/default/V1/integration/admin/token',data);
+        console.log('cus_em',customer_info.data.email);
+
+        const access_token = await axios.post('http://localhost/magento2/rest/default/V1/integration/admin/token', data);
+
+        console.log('add_token', access_token);
 
         const config = {
             headers: {
@@ -33,14 +37,13 @@ exports.get_order = async (req, res) => {
             orders: orders.data.items
         })
     } catch (err) {
-        console.log(err.response);
-
-        if (error.response.status == 401) {
+        console.log('Loi o day',err.response.status);
+        console.log(err.response.data);
+        if (err.response.status == 401) {
             return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
         }
-    }
-};
-
+    };
+}
 
 exports.get_order_detail = async (req, res) => {
     try {
@@ -57,15 +60,15 @@ exports.get_order_detail = async (req, res) => {
             }
         }
 
-        const customer_info = await axios.get('http://localhost/magento2/rest/default/V1/customers/me',config1);
+        const customer_info = await axios.get('http://localhost/magento2/rest/default/V1/customers/me', config1);
 
         console.log(customer_info.data.email);
 
-        const access_token = await axios.post('http://localhost/magento2/rest/default/V1/integration/admin/token',data);
+        const access_token = await axios.post('http://localhost/magento2/rest/default/V1/integration/admin/token', data);
 
         const config = {
             headers: {
-                'Authorization': `Bearer ${access_token.data}`
+                'Authorization': token
             }
         }
 
@@ -75,10 +78,11 @@ exports.get_order_detail = async (req, res) => {
             orders: orders.data
         })
     } catch (err) {
-        console.log(err.response);
+        console.log(err.response.status);
+        console.log(err.response.data);
 
-        if (error.response.status == 401) {
+        if (err.response.status == 401) {
             return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
         }
     }
-};
+}

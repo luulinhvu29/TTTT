@@ -34,9 +34,9 @@ User.getById = function(id, result){
 
 User.getByEmail = function(email, result){
 
-    db.query("SELECT confirmation FROM customer_entity where email = ?",email, function(err, user){
+    db.query("SELECT * FROM customer_entity where email = ?",email, function(err, user){
 
-        if(err || user.length == 0){
+        if(err){
             result(err);
         }
         else {

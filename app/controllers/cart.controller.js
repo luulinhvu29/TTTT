@@ -31,23 +31,48 @@ exports.get_cart = async function (req, res) {
 
         const response = await axios.get(`${BaseURL}` + '/carts/mine/items', config);
 
+        const img1 = await axios.get(`${BaseURL}` + '/products?searchCriteria&fields=items[sku,media_gallery_entries[file]]');
+
+        const img = img1.data.items;
+       
+
         for (i = 0; i < response.data.length; i++) {
-            const img = await axios.get(`${BaseURL}` + '/products/' + response.data[i].sku, config);
-            response.data[i].img = img.data.media_gallery_entries[0].file;
+            
+            for(im = 0; im < img.length; im++){
+               
+                if(img[im].sku == response.data[i].sku){
+                    
+                    response.data[i].img = [];
+                    for(tt = 0; tt < img[im].media_gallery_entries.length; tt++){
+                        
+                        response.data[i].img[tt] = img[im].media_gallery_entries[tt].file;
+                    }
+                    break;
+                }
+            }
+            
         }
 
         return res.status(200).json({
             product_in_cart: response.data
+            
         });
     } catch (error) {
-        console.log(error.response.status);
-        console.log(error.response.data);
+        if (error.response) {
+            console.log(error.response.status);
+            console.log(error.response.data);
 
-        if (error.response.status == 404) {
-            return res.status(404).json({ success: false, message: "Khong co gio hang" });
+            console.log(error);
+
+            if (error.response.status == 404) {
+                return res.status(404).json({ success: false, message: "Khong co gio hang" });
+            }
+            
+        }else{
+            console.log(error);
         }
 
-        res.json({ success: false, message: "Loi roi" });
+
     }
 
 };
@@ -266,7 +291,7 @@ exports.cart_info = async function (req, res) {
             }
         };
 
-        const cart = await axios.get('http://192.168.1.9:80/magento2/rest/V1/carts/mine/', config);
+        const cart = await axios.get(`${BaseURL}`+'/carts/mine/', config);
 
         return res.status(200).json({
             product_in_cart: cart.data
@@ -293,6 +318,8 @@ exports.cart_info = async function (req, res) {
 
 exports.set_shipping_address = async (req, res) => {
     try {
+
+        console.log(req.body);
 
         const data =
         {
@@ -321,12 +348,12 @@ exports.set_shipping_address = async (req, res) => {
                     telephone: req.body.telephone,
                     email: req.body.email
                 },
-                // shipping_method_code: "flatrate",
-                // shipping_carrier_code: "flatrate"
+                shipping_method_code: "flatrate",
+                shipping_carrier_code: "flatrate"
             }
         }
 
-        
+
 
         const customer_token = req.get('authorization');
 
@@ -336,7 +363,7 @@ exports.set_shipping_address = async (req, res) => {
             }
         }
 
-        const set_address = await axios.post('http://192.168.1.9:80/magento2/rest/V1/carts/mine/shipping-information', data, config);
+        const set_address = await axios.post(`${BaseURL}`+'/carts/mine/shipping-information', data, config);
 
 
         return res.status(201).json({
@@ -344,12 +371,23 @@ exports.set_shipping_address = async (req, res) => {
         })
 
     } catch (err) {
-        console.log(err.response.status);
-        console.log(err.response.data);
+        if (err.response) {
+            console.log(err.response.status);
+            console.log(err.response.data);
 
-        if (error.response.status == 401) {
-            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
+            if (err.response.status == 400) {
+                return res.status(400).json({ success: false, message: "Thieu truong" });
+            }
+
+            if (err.response.status == 401) {
+                return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
+            }
+        } else {
+            console.log(err);
+            return res.status(400).json({ success: false, message: "Thieu truong" });
         }
+
+        
     }
 }
 
@@ -370,7 +408,7 @@ exports.check_out_cart = async (req, res) => {
             }
         }
 
-        const place_order = await axios.post('http://192.168.1.9:80/magento2/rest/V1/carts/mine/payment-information', data, config);
+        const place_order = await axios.post(`${BaseURL}`+'/carts/mine/payment-information', data, config);
 
         console.log(place_order.data)
 
@@ -380,19 +418,26 @@ exports.check_out_cart = async (req, res) => {
         });
 
     } catch (err) {
-        console.log(err.response.status);
-        console.log(err.response.data);
 
-        if (err.response.status == 400) {
-            return res.status(400).json({ message: "Phuong thuc thanh toan khong hop le" });
+        if(err.response){
+            console.log(err.response.status);
+            console.log(err.response.data);
+    
+            if (err.response.status == 400) {
+                return res.status(400).json({ message: "Phuong thuc thanh toan khong hop le" });
+            }
+    
+            if (err.response.status == 401) {
+                return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
+            }
+    
+            if (err.response.status == 404) {
+                return res.status(404).json({ success: false, message: "Khong co gio hang" });
+            }
+        }else{
+            return res.status(405).json({ message: "retry pleaseee" });
         }
-
-        if (error.response.status == 401) {
-            return res.status(401).json({ success: false, message: "Access token het han, dang nhap lai" });
-        }
-
-        if (error.response.status == 404) {
-            return res.status(401).json({ success: false, message: "Khong co gio hang" });
-        }
+    
+        
     }
 }

@@ -6,6 +6,8 @@ var app = express();
 //bodyparser
 var bodyParser = require('body-parser');
 
+var BaseURL = 'http://192.168.1.9:80/magento2/rest/V1';
+
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
